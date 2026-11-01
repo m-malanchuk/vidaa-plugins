@@ -1887,7 +1887,6 @@
       var files = new Lampa.Explorer(object);
       var filter = new Lampa.Filter(object);
       var balanser = default_balanser;
-      var last_bls = {};
       var forcedQuality = '';
       var qualityFilter = {
         title: Lampa.Lang.translate('settings_player_quality'),
@@ -1991,8 +1990,6 @@
           if (type == 'filter') {
             if (a.reset) {
               if (extended) sources[balanser].reset();else _this2.start();
-            } else if (a.stype == 'source') {
-              _this2.changeBalanser(filter_sources[b.index]);
             } else if (a.stype == 'quality') {
               forcedQuality = b.title;
 
@@ -2000,8 +1997,6 @@
             } else {
               sources[balanser].filter(type, a, b);
             }
-          } else if (type == 'sort') {
-            _this2.changeBalanser(a.source);
           }
         };
 
@@ -2010,14 +2005,6 @@
         files.appendFiles(scroll.render());
         this.search();
         return this.render();
-      };
-
-      this.changeBalanser = function (balanser_name) {
-        balanser = balanser_name;
-        last_bls[object.movie.id] = balanser;
-
-        this.search();
-        setTimeout(this.closeFilter, 10);
       };
 
       this.updateQualityFilter = function () {
