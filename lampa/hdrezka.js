@@ -4,7 +4,6 @@
   'use strict';
 
   var mod_version = 'standalone-2026-11-03';
-  var default_balanser = 'rezka2';
   var network = new Lampa.Reguest();
 
     function startsWith(str, searchString) {
@@ -1886,7 +1885,6 @@
       });
       var files = new Lampa.Explorer(object);
       var filter = new Lampa.Filter(object);
-      var balanser = default_balanser;
       var forcedQuality = '';
       var qualityFilter = {
         title: Lampa.Lang.translate('settings_player_quality'),
@@ -1935,33 +1933,9 @@
       var selected_id;
       var filter_translate = {
         season: Lampa.Lang.translate('torrent_serial_season'),
-        voice: Lampa.Lang.translate('torrent_parser_voice'),
-        source: Lampa.Lang.translate('settings_rest_source')
+        voice: Lampa.Lang.translate('torrent_parser_voice')
       };
-      var all_sources = Balancers.map(function (s) {
-        var source = new s.module(_this, object, s.config);
-        return Object.assign({
-          source: source
-        }, s);
-      });
-      var obj_filter_sources = all_sources.filter(function (s) {
-        return !s.disabled;
-      });
-      var filter_sources = obj_filter_sources.map(function (s) {
-        return s.name;
-      });
-      var sources = {};
-      obj_filter_sources.forEach(function (s) {
-        sources[s.name] = s.source;
-      });
-      if (filter_sources.indexOf(balanser) == -1) {
-        balanser = default_balanser;
-
-        if (filter_sources.indexOf(balanser) == -1) {
-          balanser = filter_sources[0];
-        }
-
-      }
+      var source = new rezka2(_this, object, {});
 
       scroll.body().addClass('torrent-list');
       scroll.minus(files.render().find('.explorer__files-head'));
@@ -1989,13 +1963,13 @@
         filter.onSelect = function (type, a, b) {
           if (type == 'filter') {
             if (a.reset) {
-              if (extended) sources[balanser].reset();else _this2.start();
+              if (extended) source.reset();else _this2.start();
             } else if (a.stype == 'quality') {
               forcedQuality = b.title;
 
               _this2.updateQualityFilter();
             } else {
-              sources[balanser].filter(type, a, b);
+              source.filter(type, a, b);
             }
           }
         };
@@ -2111,7 +2085,7 @@
 
       this.find = function () {
         _this.extendChoice();
-        sources[balanser].search(object);
+        source.search(object);
       };
 
 
@@ -2241,7 +2215,7 @@
         var data = Lampa.Storage.cache('hdrezka_choice', 500, {});
         var save = data[selected_id || object.movie.id] || {};
         extended = true;
-        sources[balanser].extendChoice(save);
+        source.extendChoice(save);
       };
 
       this.saveChoice = function (choice) {
@@ -2281,7 +2255,7 @@
 
             _this6.extendChoice();
 
-            sources[balanser].search(object, elem.kp_id || elem.kinopoisk_id || elem.kinopoiskId || elem.filmId || elem.imdb_id, [elem]);
+            source.search(object, elem.kp_id || elem.kinopoisk_id || elem.kinopoiskId || elem.filmId || elem.imdb_id, [elem]);
           });
 
           _this6.append(item);
@@ -2424,7 +2398,6 @@
         });
         if (filter_items.voice && filter_items.voice.length) add('voice', Lampa.Lang.translate('torrent_parser_voice'));
         if (filter_items.season && filter_items.season.length) add('season', Lampa.Lang.translate('torrent_serial_season'));
-        if (filter_items.server && filter_items.server.length) add('server', Lampa.Lang.translate('hdrezka_server'));
         this.updateQualityFilter();
         select.push(qualityFilter);
         filter.set('filter', select);
@@ -2454,11 +2427,7 @@
           }
         }
 
-        var source_obj = obj_filter_sources.filter(function (e) {
-          return e.name === balanser;
-        })[0];
         filter.chosen('filter', select);
-        filter.chosen('sort', [source_obj ? source_obj.title : balanser]);
       };
       /**
        * Добавить файл
@@ -2720,9 +2689,7 @@
         files.destroy();
         scroll.destroy();
         network = null;
-        all_sources.forEach(function (s) {
-          s.source.destroy();
-        });
+        source.destroy();
       };
     }
 
@@ -2743,10 +2710,6 @@
     proxy: function () { return ''; },
     checkMyIp: function (_, callback) { if (callback) callback(); }
   };
-
-
-  var Balancers = [{ name: 'rezka2', title: 'HDRezka', module: rezka2, config: {}, search: true, kp: false, imdb: false, disabled: false }];
-
 
   function initLang() {
     if (!Lampa.Lang || !Lampa.Lang.add) return;
