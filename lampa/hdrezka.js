@@ -83,6 +83,7 @@
     }
 
     function requestThroughRezkaLocalProxy(chain, network, build_url, success, error, post_data, options, timeout) {
+      var attempts = 0;
       var send = function send() {
         var local_proxy = chain.current();
         if (!local_proxy) {
@@ -95,6 +96,7 @@
         }
 
         var request_url = build_url(local_proxy);
+        attempts++;
         network.clear();
         network.timeout(timeout || 10000);
         network["native"](request_url, function (data) {
@@ -106,6 +108,7 @@
               rezka2Debug('local proxy failover', {
                 failedProxy: local_proxy,
                 nextProxy: next_proxy,
+                attempt: attempts,
                 status: response && response.status || 0,
                 reason: reason || ''
               });
