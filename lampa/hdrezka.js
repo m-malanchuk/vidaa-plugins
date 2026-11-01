@@ -1,5 +1,4 @@
-// HDRezka standalone plugin
-// Extracted from the HDRezka baseline; only HDRezka and required shared UI remain.
+// HDRezka standalone plugin.
 (function () {
   'use strict';
 
@@ -536,7 +535,7 @@
         var login_form = str.match(/<form id="check-form" class="check-form" method="post" action="\/ajax\/login\/">/) || str.match(/<form id="loginForm" action="\/ajax\/login\/"/);
 
         if (login_form) {
-          error_message = Lampa.Lang.translate('hdrezka_authorization_required') + ' HDrezka';
+          error_message = Lampa.Lang.translate('hdrezka_authorization_required') + ' HDRezka';
           return;
         }
 
@@ -550,14 +549,14 @@
         var verify_form = str.match(/<span>MIRROR<\/span>.*<button type="submit" onclick="\$\.cookie(\([^)]*\))/);
 
         if (verify_form) {
-          error_message = Lampa.Lang.translate('hdrezka_unsupported_mirror') + ' HDrezka';
+          error_message = Lampa.Lang.translate('hdrezka_unsupported_mirror') + ' HDRezka';
           return;
         }
 
         var anubis_form = str.match(/<script id="anubis_challenge"/);
 
         if (anubis_form) {
-          error_message = Lampa.Lang.translate('hdrezka_unsupported_mirror') + ' HDrezka';
+          error_message = Lampa.Lang.translate('hdrezka_unsupported_mirror') + ' HDRezka';
           return;
         }
 
@@ -1804,7 +1803,7 @@
 
                   if (verify_form) {
                     Lampa.Storage.set('hdrezka_cookie', '');
-                    Lampa.Noty.show(Lampa.Lang.translate('hdrezka_unsupported_mirror') + ' HDrezka');
+                    Lampa.Noty.show(Lampa.Lang.translate('hdrezka_unsupported_mirror') + ' HDRezka');
                     if (error) error();
                     return;
                   }
@@ -2520,7 +2519,7 @@
 
           if (Lampa.Account.working() && params.element && typeof params.element.season !== 'undefined' && Lampa.Account.subscribeToTranslation) {
             menu.push({
-              title: Lampa.Lang.translate('hdrezka_voice_subscribe'),
+            title: Lampa.Lang.translate('hdrezka_voice_subscribe'),
               subscribe: true
             });
           }
