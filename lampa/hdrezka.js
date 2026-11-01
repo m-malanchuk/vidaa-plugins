@@ -798,6 +798,17 @@
               checkErrorForm(str);
             }
 
+            if (!error_message && query_more) {
+              query_more(query, 1, [], function (html_items, html_have_more) {
+                if (html_items && html_items.length) {
+                  callback(html_items, html_have_more, query);
+                } else {
+                  component.empty(network.errorDecode(a, c));
+                }
+              });
+              return;
+            }
+
             if (error_message) component.empty(error_message);else component.empty(network.errorDecode(a, c));
           }, postdata, {
             dataType: 'text',
