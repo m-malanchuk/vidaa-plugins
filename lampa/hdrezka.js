@@ -279,8 +279,9 @@
       var plain = rezkaSearchText(markup);
       var yearMatch = plain.match(/\b((?:19|20)\d{2})\b/);
       var titleYearMatch = title.match(/\(([^()]*)[, ]+((?:19|20)\d{2})(?:\s*[-–]\s*[^)]*)?\)$/);
-      var original = titleYearMatch ? rezkaSearchText(titleYearMatch[1]).replace(/[, ]+$/, '') : '';
-      var type = /сериал|series|season|мультсериал/i.test(plain) ? 'series' : 'movie';
+      var original = rezkaSearchAttribute(markup, 'data-original-title') || rezkaSearchAttribute(markup, 'data-original') || (titleYearMatch ? rezkaSearchText(titleYearMatch[1]).replace(/[, ]+$/, '') : '');
+      var typeAttribute = rezkaSearchAttribute(markup, 'data-type');
+      var type = typeAttribute || (/сериал|series|season|мультсериал/i.test(plain) ? 'series' : 'movie');
       var poster = rezkaSearchAttribute(markup, 'data-src') || rezkaSearchAttribute(markup, 'data-original') || rezkaSearchAttribute(markup, 'src');
 
       return {
