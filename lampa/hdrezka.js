@@ -1276,6 +1276,10 @@
             }
 
             if (file) {
+              if (!/^https?:\/\//i.test(file)) {
+                error('HDRezka: получен некорректный прямой URL потока');
+                return;
+              }
               element.stream = file;
               element.qualitys = quality;
               element.subtitles = parseSubtitles(json.subtitle);
