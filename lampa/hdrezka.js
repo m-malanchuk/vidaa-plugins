@@ -1564,17 +1564,23 @@
       return summary;
     }
 
+    function rezka2SafeDebugValue(value, depth) {
+      if (value === null || typeof value !== 'object') return value;
+      if ((depth || 0) > 2) return '[nested]';
+      if (value instanceof Array) return value.map(function (item) {
+        return rezka2SafeDebugValue(item, (depth || 0) + 1);
+      });
+      var safe = {};
+      Object.keys(value).forEach(function (key) {
+        var normalized = key.toLowerCase();
+        if (normalized.indexOf('cookie') !== -1 || normalized.indexOf('password') !== -1 || normalized.indexOf('response') !== -1 || normalized === 'body' || normalized === 'url' || normalized === 'request_url') return;
+        safe[key] = rezka2SafeDebugValue(value[key], (depth || 0) + 1);
+      });
+      return safe;
+    }
+
     function rezka2Debug(stage, data) {
-      var safe = data;
-      if (data && typeof data === 'object') {
-        safe = {};
-        Object.keys(data).forEach(function (key) {
-          var normalized = key.toLowerCase();
-          if (normalized.indexOf('cookie') !== -1 || normalized.indexOf('password') !== -1 || normalized.indexOf('response') !== -1 || normalized === 'body' || normalized === 'url' || normalized === 'request_url') return;
-          safe[key] = data[key];
-        });
-      }
-      console.log('[HDRezka debug] ' + stage + ':', safe);
+      console.log('[HDRezka debug] ' + stage + ':', rezka2SafeDebugValue(data, 0));
     }
 
     function rezka2CookieHeaders(json) {
