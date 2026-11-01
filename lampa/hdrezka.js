@@ -16,7 +16,7 @@
       return str.indexOf(searchString, start) === start;
     }
 
-    function rezka2Mirror() {
+    function hdrezkaMirror() {
       var url = Lampa.Storage.get('hdrezka_mirror', '') + '';
       if (!url) return 'https://kvk.zone';
       if (url.indexOf('://') == -1) url = 'https://' + url;
@@ -25,28 +25,28 @@
     }
 
     // BEGIN HDREZKA LOCAL PROXY LOGIC
-    function normalizeRezkaLocalProxy(value) {
+    function normalizeHdrezkaLocalProxy(value) {
       var url = (value || '').toString().trim();
       if (!/^https?:\/\//i.test(url)) return '';
       return url.replace(/\/+$/, '') + '/';
     }
 
-    function rezkaLocalProxyEnabled() {
+    function hdrezkaLocalProxyEnabled() {
       return Lampa.Storage.field('hdrezka_local_proxy_enabled') === true;
     }
 
-    function rezkaLocalProxyList() {
+    function hdrezkaLocalProxyList() {
       var result = [];
 
       for (var index = 1; index <= 3; index++) {
-        var proxy_url = normalizeRezkaLocalProxy(Lampa.Storage.get('hdrezka_local_proxy_' + index, ''));
+        var proxy_url = normalizeHdrezkaLocalProxy(Lampa.Storage.get('hdrezka_local_proxy_' + index, ''));
         if (proxy_url && result.indexOf(proxy_url) === -1) result.push(proxy_url);
       }
 
       return result;
     }
 
-    function createRezkaLocalProxyChain(proxies) {
+    function createHdrezkaLocalProxyChain(proxies) {
       var items = (proxies || []).slice();
       var index = 0;
 
@@ -70,18 +70,18 @@
       };
     }
 
-    function shouldFailoverRezkaLocalProxy(response) {
+    function shouldFailoverHdrezkaLocalProxy(response) {
       var status = response && parseInt(response.status, 10) || 0;
       return status === 0 || status === 502 || status === 503 || status === 504;
     }
 
-    function rezkaLocalProxyConfigError() {
-      if (!rezkaLocalProxyEnabled()) return Lampa.Lang.translate('hdrezka_local_proxy_disabled_error');
-      if (!rezkaLocalProxyList().length) return Lampa.Lang.translate('hdrezka_local_proxy_missing_error');
+    function hdrezkaLocalProxyConfigError() {
+      if (!hdrezkaLocalProxyEnabled()) return Lampa.Lang.translate('hdrezka_local_proxy_disabled_error');
+      if (!hdrezkaLocalProxyList().length) return Lampa.Lang.translate('hdrezka_local_proxy_missing_error');
       return '';
     }
 
-    function requestThroughRezkaLocalProxy(chain, network, build_url, success, error, post_data, options, timeout) {
+    function requestThroughHdrezkaLocalProxy(chain, network, build_url, success, error, post_data, options, timeout) {
       var attempts = 0;
       var send = function send() {
         var local_proxy = chain.current();
@@ -101,10 +101,10 @@
         network["native"](request_url, function (data) {
           if (success) success(data, local_proxy, request_url);
         }, function (response, reason) {
-          if (shouldFailoverRezkaLocalProxy(response)) {
+          if (shouldFailoverHdrezkaLocalProxy(response)) {
             var next_proxy = chain.advance(local_proxy);
             if (next_proxy) {
-              rezka2Debug('local proxy failover', {
+              hdrezkaDebug('local proxy failover', {
                 failedProxy: local_proxy,
                 nextProxy: next_proxy,
                 attempt: attempts,
@@ -259,32 +259,32 @@
     function randomId(len, extra) {
       return randomChars('0123456789abcdefghijklmnopqrstuvwxyz' + (extra || ''), len);
     }
-    function rezkaSearchText(value) {
+    function hdrezkaSearchText(value) {
       return (value || '').toString().replace(/<[^>]*>/g, ' ').replace(/&nbsp;/gi, ' ').replace(/&amp;/gi, '&').replace(/&quot;/gi, '"').replace(/&#39;/gi, "'").replace(/&#(\d+);/g, function (_, code) {
         return String.fromCharCode(parseInt(code, 10));
       }).replace(/\s+/g, ' ').trim();
     }
 
-    function rezkaSearchAttribute(markup, name) {
+    function hdrezkaSearchAttribute(markup, name) {
       var match = (markup || '').match(new RegExp(name + "\\s*=\\s*[\\\"']([^\\\"']*)[\\\"']", 'i'));
-      return match ? rezkaSearchText(match[1]) : '';
+      return match ? hdrezkaSearchText(match[1]) : '';
     }
 
-    function rezkaSearchResult(markup) {
+    function hdrezkaSearchResult(markup) {
       var anchor = (markup || '').match(/<a\b[^>]*href\s*=\s*["'][^"']+["'][^>]*>[\s\S]*?<\/a>/i);
       if (!anchor) return null;
       var anchorMarkup = anchor[0];
-      var link = rezkaSearchAttribute(anchorMarkup, 'href');
+      var link = hdrezkaSearchAttribute(anchorMarkup, 'href');
       var inner = anchorMarkup.replace(/^<[\s\S]*?>/, '').replace(/<\/a>\s*$/i, '');
       var titleMatch = inner.match(/<[^>]*class\s*=\s*["'][^"']*\benty\b[^"']*["'][^>]*>([\s\S]*?)<\/[^>]+>/i);
-      var title = titleMatch ? rezkaSearchText(titleMatch[1]) : rezkaSearchText(inner);
-      var plain = rezkaSearchText(markup);
+      var title = titleMatch ? hdrezkaSearchText(titleMatch[1]) : hdrezkaSearchText(inner);
+      var plain = hdrezkaSearchText(markup);
       var yearMatch = plain.match(/\b((?:19|20)\d{2})\b/);
       var titleYearMatch = title.match(/\(([^()]*)[, ]+((?:19|20)\d{2})(?:\s*[-–]\s*[^)]*)?\)$/);
-      var original = rezkaSearchAttribute(markup, 'data-original-title') || rezkaSearchAttribute(markup, 'data-original') || (titleYearMatch ? rezkaSearchText(titleYearMatch[1]).replace(/[, ]+$/, '') : '');
-      var typeAttribute = rezkaSearchAttribute(markup, 'data-type');
+      var original = hdrezkaSearchAttribute(markup, 'data-original-title') || hdrezkaSearchAttribute(markup, 'data-original') || (titleYearMatch ? hdrezkaSearchText(titleYearMatch[1]).replace(/[, ]+$/, '') : '');
+      var typeAttribute = hdrezkaSearchAttribute(markup, 'data-type');
       var type = typeAttribute || (/сериал|series|season|мультсериал/i.test(plain) ? 'series' : 'movie');
-      var poster = rezkaSearchAttribute(markup, 'data-src') || rezkaSearchAttribute(markup, 'data-original') || rezkaSearchAttribute(markup, 'src');
+      var poster = hdrezkaSearchAttribute(markup, 'data-src') || hdrezkaSearchAttribute(markup, 'data-original') || hdrezkaSearchAttribute(markup, 'src');
 
       return {
         title: title,
@@ -296,7 +296,7 @@
       };
     }
 
-    function rezkaSearchUnique(items) {
+    function hdrezkaSearchUnique(items) {
       var result = [];
       (items || []).forEach(function (item) {
         if (!item || !item.link) return;
@@ -308,34 +308,34 @@
       return result;
     }
 
-    function parseRezkaAjaxResults(markup) {
+    function parseHdrezkaAjaxResults(markup) {
       var items = [];
       var blocks = (markup || '').match(/<li\b[\s\S]*?<\/li>/gi) || [];
       blocks.forEach(function (block) {
-        var item = rezkaSearchResult(block);
+        var item = hdrezkaSearchResult(block);
         if (item) items.push(item);
       });
-      return rezkaSearchUnique(items);
+      return hdrezkaSearchUnique(items);
     }
 
-    function parseRezkaHtmlResults(markup) {
+    function parseHdrezkaHtmlResults(markup) {
       var items = [];
       var blocks = (markup || '').match(/<div\b[^>]*class\s*=\s*["'][^"']*b-content__inline_item-link[^"']*["'][\s\S]*?<\/div>\s*<\/div>/gi) || [];
       blocks.forEach(function (block) {
-        var item = rezkaSearchResult(block);
+        var item = hdrezkaSearchResult(block);
         if (item) items.push(item);
       });
-      return rezkaSearchUnique(items);
+      return hdrezkaSearchUnique(items);
     }
 
-    function rezkaNormalizeTitle(value) {
-      return rezkaSearchText(value).toLowerCase().replace(/ё/g, 'е').replace(/[^a-zа-я0-9]+/gi, ' ').replace(/\s+/g, ' ').trim();
+    function hdrezkaNormalizeTitle(value) {
+      return hdrezkaSearchText(value).toLowerCase().replace(/ё/g, 'е').replace(/[^a-zа-я0-9]+/gi, ' ').replace(/\s+/g, ' ').trim();
     }
 
-    function rezkaSearchHasConfidentResult(items, selectedTitle, originalTitles, year) {
-      var expected = [selectedTitle].concat(originalTitles || []).map(rezkaNormalizeTitle).filter(Boolean);
+    function hdrezkaSearchHasConfidentResult(items, selectedTitle, originalTitles, year) {
+      var expected = [selectedTitle].concat(originalTitles || []).map(hdrezkaNormalizeTitle).filter(Boolean);
       var exact = (items || []).filter(function (item) {
-        var values = [item.title, item.orig_title].map(rezkaNormalizeTitle);
+        var values = [item.title, item.orig_title].map(hdrezkaNormalizeTitle);
         return values.some(function (value) {
           return expected.indexOf(value) !== -1;
         });
@@ -345,17 +345,17 @@
       return Math.abs(parseInt(exact[0].year, 10) - parseInt(year, 10)) <= 1;
     }
 
-    function rezka2(component, _object, config) {
+    function hdrezka(component, _object, config) {
       var network = new Lampa.Reguest();
       var extract = {};
       var object = _object;
       var select_title = '';
       var prefer_http = Lampa.Storage.field('hdrezka_prefer_http') === true;
       var prefer_mp4 = Lampa.Storage.field('hdrezka_prefer_mp4') === true;
-      var local_proxy_error = Utils.rezkaLocalProxyConfigError();
-      var local_proxy_chain = Utils.createRezkaLocalProxyChain(Utils.rezkaLocalProxyList());
+      var local_proxy_error = Utils.hdrezkaLocalProxyConfigError();
+      var local_proxy_chain = Utils.createHdrezkaLocalProxyChain(Utils.hdrezkaLocalProxyList());
       var prox = local_proxy_chain.current();
-      var host = Utils.rezka2Mirror();
+      var host = Utils.hdrezkaMirror();
       var ref = host + '/';
       var logged_in = false;
       var user_agent = Utils.baseUserAgent();
@@ -409,7 +409,7 @@
       }
 
       function mergeResponseCookies(json) {
-        var setCookies = rezka2CookieHeaders(json);
+        var setCookies = hdrezkaCookieHeaders(json);
         if (!setCookies || !setCookies.forEach) return false;
         var values = {};
         cookie.split(';').forEach(function (part) {
@@ -430,7 +430,7 @@
         cookie = result.join('; ');
         Lampa.Storage.set('hdrezka_cookie', cookie);
         if (prox) prox_enc = prox_enc_base + 'param/Cookie=' + encodeURIComponent(cookie) + '/';
-        rezka2Debug('Anubis cookies merged', rezka2CookiePreview(cookie));
+        hdrezkaDebug('Anubis cookies merged', hdrezkaCookiePreview(cookie));
         return true;
       }
 
@@ -439,11 +439,11 @@
       }
 
       function localProxyRequest(url, success, error, postdata, options, encoding, timeout) {
-        Utils.requestThroughRezkaLocalProxy(local_proxy_chain, network, function (local_proxy) {
+        Utils.requestThroughHdrezkaLocalProxy(local_proxy_chain, network, function (local_proxy) {
           return component.proxyLink(url, local_proxy, encoding == null ? prox_enc : encoding, 'enc2t');
         }, function (data, local_proxy, request_url) {
           prox = local_proxy;
-          rezka2Debug('local proxy request success', {
+          hdrezkaDebug('local proxy request success', {
             proxy: local_proxy
           });
           if (success) success(data);
@@ -505,7 +505,7 @@
               nonce++;
             }
             if (nonce % 1024 < 64) {
-              rezka2Debug('Anubis progress', { nonce: nonce, elapsed: Date.now() - started });
+              hdrezkaDebug('Anubis progress', { nonce: nonce, elapsed: Date.now() - started });
             }
             setTimeout(step, 0);
           } catch (error) {
@@ -515,11 +515,11 @@
         step();
       }
 
-      rezka2Debug('source request config', {
+      hdrezkaDebug('source request config', {
         host: host,
         proxy: prox || 'not-configured',
         proxyCount: local_proxy_chain.size(),
-        cookie: rezka2CookieSummary(cookie)
+        cookie: hdrezkaCookieSummary(cookie)
       });
 
       var embed = ref;
@@ -601,14 +601,14 @@
 
         var query_more = function query_more(query, page, data, callback) {
           var url = more_url + '&q=' + encodeURIComponent(query) + '&page=' + encodeURIComponent(page);
-          rezka2Debug('HTML search request', {
+          hdrezkaDebug('HTML search request', {
             target: url,
             proxy: prox
           });
           localProxyRequest(url, function (str) {
               str = (str || '').replace(/\n/g, '');
               checkErrorForm(str);
-              var links = parseRezkaHtmlResults(str);
+              var links = parseHdrezkaHtmlResults(str);
               var have_more = !!str.match(/<a [^>]*>\s*<span class="b-navigation__next\b/);
 
               if (links && links.length) {
@@ -772,17 +772,17 @@
 
         var query_search = function query_search(query, data, callback) {
           var postdata = 'q=' + encodeURIComponent(query);
-          rezka2Debug('search request', {
+          hdrezkaDebug('search request', {
             target: url,
             proxy: prox
           });
           localProxyRequest(url, function (str) {
             str = (str || '').replace(/\n/g, '');
             checkErrorForm(str);
-            var links = parseRezkaAjaxResults(str);
+            var links = parseHdrezkaAjaxResults(str);
             var have_more = str.indexOf('<a class="b-search__live_all"') !== -1;
             if (links && links.length) data = data.concat(links);
-            if (rezkaSearchHasConfidentResult(data, select_title, orig_titles, search_year) || !query_more) {
+            if (hdrezkaSearchHasConfidentResult(data, select_title, orig_titles, search_year) || !query_more) {
               if (callback) callback(data, have_more, query);
               return;
             }
@@ -896,7 +896,7 @@
           component.empty('HDrezka: превышен лимит служебных перенаправлений');
           return;
         }
-        rezka2Debug('page redirect step', { step: redirectCount, target: url });
+        hdrezkaDebug('page redirect step', { step: redirectCount, target: url });
         localProxyRequest(url, function (json) {
           if (typeof json === 'string') {
             try { json = JSON.parse(json); } catch (e) {}
@@ -912,7 +912,7 @@
           }
           finishPage(json.body || '');
         }, function (a, c) {
-          rezka2Debug('page redirect error', { status: a && a.status, response: a && a.responseText, error: c });
+          hdrezkaDebug('page redirect error', { status: a && a.status, response: a && a.responseText, error: c });
           component.empty(network.errorDecode(a, c));
         }, false, { dataType: 'text', headers: headers }, cookieProxyEncoding('get_redirect/cookie_plus/'), 15000);
       }
@@ -924,7 +924,7 @@
         }
         anubis_attempted = true;
         component.loading(true);
-        rezka2Debug('Anubis challenge detected', { target: url });
+        hdrezkaDebug('Anubis challenge detected', { target: url });
         localProxyRequest(url, function (json) {
           if (typeof json === 'string') {
             try { json = JSON.parse(json); } catch (e) {}
@@ -943,16 +943,16 @@
           }
           var challenge = payload.challenge || {};
           var rules = payload.rules || {};
-          rezka2Debug('Anubis solving', { id: challenge.id, difficulty: rules.difficulty });
+          hdrezkaDebug('Anubis solving', { id: challenge.id, difficulty: rules.difficulty });
           solveAnubisPow(challenge.randomData || '', parseInt(rules.difficulty || 4), function (solution) {
-            rezka2Debug('Anubis solution found', solution);
+            hdrezkaDebug('Anubis solution found', solution);
             var passTarget = host + '/.within.website/x/cmd/anubis/api/pass-challenge?id=' + encodeURIComponent(challenge.id || '') + '&response=' + encodeURIComponent(solution.hash) + '&nonce=' + encodeURIComponent(solution.nonce) + '&redir=' + encodeURIComponent(url) + '&elapsedTime=' + encodeURIComponent(solution.elapsed);
             localProxyRequest(passTarget, function (passJson) {
               if (typeof passJson === 'string') {
                 try { passJson = JSON.parse(passJson); } catch (e) {}
               }
               mergeResponseCookies(passJson);
-              rezka2Debug('Anubis pass response', {
+              hdrezkaDebug('Anubis pass response', {
                 currentUrl: passJson && passJson.currentUrl,
                 redirectUrl: passJson && passJson.redirectUrl,
                 cookieCount: passJson && passJson.cookie && passJson.cookie.length || 0
@@ -960,14 +960,14 @@
               error_message = '';
               getPageWithCookies(url, 0);
             }, function (a, c) {
-              rezka2Debug('Anubis pass error', { status: a && a.status, response: a && a.responseText, error: c });
+              hdrezkaDebug('Anubis pass error', { status: a && a.status, response: a && a.responseText, error: c });
               component.empty('HDrezka: не удалось подтвердить Anubis');
             }, false, { dataType: 'text', headers: headers }, cookieProxyEncoding('get_redirect/cookie_plus/'), 20000);
           }, function (message) {
             component.empty('HDrezka: ошибка вычисления Anubis — ' + message);
           });
         }, function (a, c) {
-          rezka2Debug('Anubis challenge request error', { status: a && a.status, response: a && a.responseText, error: c });
+          hdrezkaDebug('Anubis challenge request error', { status: a && a.status, response: a && a.responseText, error: c });
           component.empty('HDrezka: не удалось получить Anubis challenge');
         }, false, { dataType: 'text', headers: headers }, cookieProxyEncoding('cookie_plus/'), 20000);
       }
@@ -1545,7 +1545,7 @@
 
     var network$3 = new Lampa.Reguest();
 
-    function rezka2CookieSummary(cookie) {
+    function hdrezkaCookieSummary(cookie) {
       if (!cookie) return 'не получен';
       var names = [];
       (cookie + '').split(';').forEach(function (part) {
@@ -1556,48 +1556,48 @@
       return names.join(', ') + ' (' + (cookie + '').length + ' символов)';
     }
 
-    function rezka2CookiePreview(cookie) {
+    function hdrezkaCookiePreview(cookie) {
       if (!cookie) return 'не получен';
-      var summary = rezka2CookieSummary(cookie);
+      var summary = hdrezkaCookieSummary(cookie);
       console.log('[HDrezka debug] Cookie:', summary);
       return summary;
     }
 
-    function rezka2SafeDebugValue(value, depth) {
+    function hdrezkaSafeDebugValue(value, depth) {
       if (value === null || typeof value !== 'object') return value;
       if ((depth || 0) > 2) return '[nested]';
       if (value instanceof Array) return value.map(function (item) {
-        return rezka2SafeDebugValue(item, (depth || 0) + 1);
+        return hdrezkaSafeDebugValue(item, (depth || 0) + 1);
       });
       var safe = {};
       Object.keys(value).forEach(function (key) {
         var normalized = key.toLowerCase();
         if (normalized.indexOf('cookie') !== -1 || normalized.indexOf('password') !== -1 || normalized.indexOf('response') !== -1 || normalized === 'body' || normalized === 'url' || normalized === 'request_url') return;
-        safe[key] = rezka2SafeDebugValue(value[key], (depth || 0) + 1);
+        safe[key] = hdrezkaSafeDebugValue(value[key], (depth || 0) + 1);
       });
       return safe;
     }
 
-    function rezka2Debug(stage, data) {
-      console.log('[HDRezka debug] ' + stage + ':', rezka2SafeDebugValue(data, 0));
+    function hdrezkaDebug(stage, data) {
+      console.log('[HDRezka debug] ' + stage + ':', hdrezkaSafeDebugValue(data, 0));
     }
 
-    function rezka2CookieHeaders(json) {
+    function hdrezkaCookieHeaders(json) {
       if (!json) return null;
       if (json.cookie && json.cookie.forEach) return json.cookie;
       var headers = json.headers || {};
       return headers['set-cookie'] || headers['Set-Cookie'] || null;
     }
 
-    function rezka2Login(success, error) {
-      var config_error = Utils.rezkaLocalProxyConfigError();
+    function hdrezkaLogin(success, error) {
+      var config_error = Utils.hdrezkaLocalProxyConfigError();
       if (config_error) {
         Lampa.Noty.show(config_error);
         if (error) error({ status: 0, responseText: config_error }, config_error);
         return;
       }
 
-      rezka2FillCookie(function () {
+      hdrezkaFillCookie(function () {
         Lampa.Storage.set('hdrezka_status', 'true');
         if (success) success();
       }, function (a, c) {
@@ -1606,21 +1606,21 @@
       });
     }
 
-    function rezka2Logout(success, error) {
-      var config_error = Utils.rezkaLocalProxyConfigError();
+    function hdrezkaLogout(success, error) {
+      var config_error = Utils.hdrezkaLocalProxyConfigError();
       if (config_error) {
         Lampa.Noty.show(config_error);
         if (error) error({ status: 0, responseText: config_error }, config_error);
         return;
       }
 
-      var chain = Utils.createRezkaLocalProxyChain(Utils.rezkaLocalProxyList());
-      var url = Utils.rezka2Mirror() + '/logout/';
+      var chain = Utils.createHdrezkaLocalProxyChain(Utils.hdrezkaLocalProxyList());
+      var url = Utils.hdrezkaMirror() + '/logout/';
       var encoding = 'param/User-Agent=' + encodeURIComponent(Utils.baseUserAgent()) + '/';
       var cookie = Lampa.Storage.get('hdrezka_cookie', '') + '';
       if (cookie) encoding += 'param/Cookie=' + encodeURIComponent(cookie) + '/';
 
-      Utils.requestThroughRezkaLocalProxy(chain, network$3, function (local_proxy) {
+      Utils.requestThroughHdrezkaLocalProxy(chain, network$3, function (local_proxy) {
         return Utils.proxyLink(url, local_proxy, encoding, 'enc2t');
       }, function () {
         Lampa.Storage.set('hdrezka_cookie', '');
@@ -1634,19 +1634,19 @@
       }, false, { dataType: 'text' }, 8000);
     }
 
-    function rezka2FillCookie(success, error) {
-      var config_error = Utils.rezkaLocalProxyConfigError();
+    function hdrezkaFillCookie(success, error) {
+      var config_error = Utils.hdrezkaLocalProxyConfigError();
       if (config_error) {
         Lampa.Noty.show(config_error);
         if (error) error({ status: 0, responseText: config_error }, config_error);
         return;
       }
 
-      var chain = Utils.createRezkaLocalProxyChain(Utils.rezkaLocalProxyList());
+      var chain = Utils.createHdrezkaLocalProxyChain(Utils.hdrezkaLocalProxyList());
       var prox = chain.current();
       var prox_enc = '';
       var returnHeaders = false;
-      var host = Utils.rezka2Mirror();
+      var host = Utils.hdrezkaMirror();
 
       var user_agent = Utils.baseUserAgent();
       var headers = {};
@@ -1654,11 +1654,11 @@
       prox_enc += 'cookie_plus/param/Cookie=/';
 
       function localProxyRequest(url, encoding, on_success, on_error, postdata, options) {
-        Utils.requestThroughRezkaLocalProxy(chain, network$3, function (local_proxy) {
+        Utils.requestThroughHdrezkaLocalProxy(chain, network$3, function (local_proxy) {
           return Utils.proxyLink(url, local_proxy, encoding, 'enc2t');
         }, function (data, local_proxy, request_url) {
           prox = local_proxy;
-          rezka2Debug('login local proxy success', { proxy: local_proxy });
+          hdrezkaDebug('login local proxy success', { proxy: local_proxy });
           if (on_success) on_success(data);
         }, on_error, postdata, options, 8000);
       }
@@ -1668,7 +1668,7 @@
       var login_password = Lampa.Storage.get('hdrezka_password', '') + '';
 
       if (!login_name || !login_password) {
-        rezka2Debug('credentials missing', {
+        hdrezkaDebug('credentials missing', {
           login: !!login_name,
           password: !!login_password
         });
@@ -1683,13 +1683,13 @@
       var postdata = 'login_name=' + encodeURIComponent(login_name);
       postdata += '&login_password=' + encodeURIComponent(login_password);
       postdata += '&login_not_save=0';
-      rezka2Debug('login request', {
+      hdrezkaDebug('login request', {
         host: host,
         proxy: prox,
         returnHeaders: returnHeaders
       });
       localProxyRequest(url, prox_enc, function (json) {
-        rezka2Debug('login response', json);
+        hdrezkaDebug('login response', json);
         var cookie = '';
         var values = {};
         var sid = '';
@@ -1698,7 +1698,7 @@
 
         if (!body.success) {
           if (body.message) Lampa.Noty.show(typeof body.message === 'string' ? body.message : body.message.email || JSON.stringify(body.message));
-          rezka2Debug('login rejected', body);
+          hdrezkaDebug('login rejected', body);
           if (error) error({
             status: json && json.status || 0,
             responseText: typeof json === 'string' ? json : JSON.stringify(body)
@@ -1706,7 +1706,7 @@
           return;
         }
 
-        var cookieHeaders = rezka2CookieHeaders(json);
+        var cookieHeaders = hdrezkaCookieHeaders(json);
 
         if (cookieHeaders && cookieHeaders.forEach) {
           cookieHeaders.forEach(function (param) {
@@ -1744,7 +1744,7 @@
               return;
             }
 
-            var cookieHeaders = rezka2CookieHeaders(json);
+            var cookieHeaders = hdrezkaCookieHeaders(json);
 
             if (cookieHeaders && cookieHeaders.forEach) {
               cookieHeaders.forEach(function (param) {
@@ -1809,7 +1809,7 @@
                     return;
                   }
 
-                  var cookieHeaders = rezka2CookieHeaders(json);
+                  var cookieHeaders = hdrezkaCookieHeaders(json);
 
                   if (cookieHeaders && cookieHeaders.forEach) {
                     cookieHeaders.forEach(function (param) {
@@ -1852,14 +1852,14 @@
             returnHeaders: returnHeaders
           });
         } else {
-          rezka2Debug('cookie missing', json);
+          hdrezkaDebug('cookie missing', json);
           if (error) error({
             status: json && json.status || 0,
             responseText: 'Успешный ответ без доступного Set-Cookie'
           }, 'Set-Cookie не найден в ответе');
         }
       }, function (a, c) {
-        rezka2Debug('login network error', {
+        hdrezkaDebug('login network error', {
           status: a && a.status,
           statusText: a && a.statusText,
           responseText: a && a.responseText,
@@ -1935,7 +1935,7 @@
         season: Lampa.Lang.translate('torrent_serial_season'),
         voice: Lampa.Lang.translate('torrent_parser_voice')
       };
-      var source = new rezka2(_this, object, {});
+      var source = new hdrezka(_this, object, {});
 
       scroll.body().addClass('torrent-list');
       scroll.minus(files.render().find('.explorer__files-head'));
@@ -2695,12 +2695,12 @@
 
 
   var Utils = {
-    rezka2Mirror: rezka2Mirror,
-    rezkaLocalProxyEnabled: rezkaLocalProxyEnabled,
-    rezkaLocalProxyList: rezkaLocalProxyList,
-    createRezkaLocalProxyChain: createRezkaLocalProxyChain,
-    rezkaLocalProxyConfigError: rezkaLocalProxyConfigError,
-    requestThroughRezkaLocalProxy: requestThroughRezkaLocalProxy,
+    hdrezkaMirror: hdrezkaMirror,
+    hdrezkaLocalProxyEnabled: hdrezkaLocalProxyEnabled,
+    hdrezkaLocalProxyList: hdrezkaLocalProxyList,
+    createHdrezkaLocalProxyChain: createHdrezkaLocalProxyChain,
+    hdrezkaLocalProxyConfigError: hdrezkaLocalProxyConfigError,
+    requestThroughHdrezkaLocalProxy: requestThroughHdrezkaLocalProxy,
     baseUserAgent: baseUserAgent,
     parseURL: parseURL,
     fixLink: fixLink,
@@ -2849,20 +2849,20 @@
       param: { name: 'hdrezka_login', type: 'button' },
       field: { name: Lampa.Lang.translate('hdrezka_login') },
       onChange: function () {
-        rezka2Login(function () { Lampa.Noty.show('HDRezka: вход выполнен'); }, function (a, c) { Lampa.Noty.show('HDRezka: вход не выполнен' + (c ? ': ' + c : '')); });
+        hdrezkaLogin(function () { Lampa.Noty.show('HDRezka: вход выполнен'); }, function (a, c) { Lampa.Noty.show('HDRezka: вход не выполнен' + (c ? ': ' + c : '')); });
       }
     });
     Lampa.SettingsApi.addParam({
       component: componentName,
       param: { name: 'hdrezka_logout', type: 'button' },
       field: { name: Lampa.Lang.translate('hdrezka_logout') },
-      onChange: function () { rezka2Logout(function () { Lampa.Noty.show('HDRezka: выход выполнен'); }, function () { Lampa.Noty.show('HDRezka: локальные cookies очищены'); }); }
+      onChange: function () { hdrezkaLogout(function () { Lampa.Noty.show('HDRezka: выход выполнен'); }, function () { Lampa.Noty.show('HDRezka: локальные cookies очищены'); }); }
     });
     Lampa.SettingsApi.addParam({
       component: componentName,
       param: { name: 'hdrezka_fill_cookie', type: 'button' },
       field: { name: Lampa.Lang.translate('hdrezka_fill_cookie') },
-      onChange: function () { rezka2FillCookie(function () { Lampa.Noty.show('HDRezka: cookie получен'); }, function () { Lampa.Noty.show('HDRezka: cookie получить не удалось'); }); }
+      onChange: function () { hdrezkaFillCookie(function () { Lampa.Noty.show('HDRezka: cookie получен'); }, function () { Lampa.Noty.show('HDRezka: cookie получить не удалось'); }); }
     });
   }
 
@@ -2874,5 +2874,6 @@
 
   startPlugin();
 })();
+
 
 
