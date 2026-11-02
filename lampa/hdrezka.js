@@ -2,7 +2,6 @@
 (function () {
   'use strict';
 
-  var mod_version = 'standalone-2026-11-03';
   var network = new Lampa.Reguest();
 
     function startsWith(str, searchString) {
@@ -28,10 +27,6 @@
       var url = (value || '').toString().trim();
       if (!/^https?:\/\//i.test(url)) return '';
       return url.replace(/\/+$/, '') + '/';
-    }
-
-    function hdrezkaLocalProxyEnabled() {
-      return Lampa.Storage.field('hdrezka_local_proxy_enabled') === true;
     }
 
     function hdrezkaLocalProxyList() {
@@ -75,7 +70,6 @@
     }
 
     function hdrezkaLocalProxyConfigError() {
-      if (!hdrezkaLocalProxyEnabled()) return Lampa.Lang.translate('hdrezka_local_proxy_disabled_error');
       if (!hdrezkaLocalProxyList().length) return Lampa.Lang.translate('hdrezka_local_proxy_missing_error');
       return '';
     }
@@ -2695,7 +2689,6 @@
 
   var Utils = {
     hdrezkaMirror: hdrezkaMirror,
-    hdrezkaLocalProxyEnabled: hdrezkaLocalProxyEnabled,
     hdrezkaLocalProxyList: hdrezkaLocalProxyList,
     createHdrezkaLocalProxyChain: createHdrezkaLocalProxyChain,
     hdrezkaLocalProxyConfigError: hdrezkaLocalProxyConfigError,
@@ -2714,19 +2707,16 @@
     if (!Lampa.Lang || !Lampa.Lang.add) return;
     Lampa.Lang.add({
       hdrezka_title_full: { ru: 'HDRezka', en: 'HDRezka' },
-      hdrezka_watch: { ru: 'Смотреть на HDRezka', en: 'Watch on HDRezka' },
       hdrezka_nolink: { ru: 'Не удалось получить ссылку', en: 'Failed to get link' },
       hdrezka_blockedlink: { ru: 'Видео недоступно', en: 'Video unavailable' },
       hdrezka_authorization_required: { ru: 'Требуется авторизация', en: 'Authorization required' },
       hdrezka_unsupported_mirror: { ru: 'Неподдерживаемое зеркало', en: 'Unsupported mirror' },
-      hdrezka_local_proxy_disabled_error: { ru: 'HDRezka: локальный прокси выключен', en: 'HDRezka: local proxy is disabled' },
-      hdrezka_local_proxy_missing_error: { ru: 'HDRezka: настройте хотя бы один локальный прокси', en: 'HDRezka: configure at least one local proxy' },
+      hdrezka_local_proxy_missing_error: { ru: 'HDRezka: настройте хотя бы один телефон Lampa Bridge', en: 'HDRezka: configure at least one Lampa Bridge phone' },
       hdrezka_local_proxy_unavailable_error: { ru: 'HDRezka: локальные прокси недоступны', en: 'HDRezka: local proxies are unavailable' },
       hdrezka_mirror: { ru: 'Зеркало HDRezka', en: 'HDRezka mirror' },
-      hdrezka_local_proxy_enabled: { ru: 'Использовать локальный прокси', en: 'Use local proxy' },
-      hdrezka_local_proxy_1: { ru: 'Локальный прокси 1', en: 'Local proxy 1' },
-      hdrezka_local_proxy_2: { ru: 'Локальный прокси 2', en: 'Local proxy 2' },
-      hdrezka_local_proxy_3: { ru: 'Локальный прокси 3', en: 'Local proxy 3' },
+      hdrezka_local_proxy_1: { ru: 'Телефон 1 (Lampa Bridge)', en: 'Phone 1 (Lampa Bridge)' },
+      hdrezka_local_proxy_2: { ru: 'Телефон 2 (Lampa Bridge)', en: 'Phone 2 (Lampa Bridge)' },
+      hdrezka_local_proxy_3: { ru: 'Телефон 3 (Lampa Bridge)', en: 'Phone 3 (Lampa Bridge)' },
       hdrezka_name: { ru: 'Логин HDRezka', en: 'HDRezka login' },
       hdrezka_password: { ru: 'Пароль HDRezka', en: 'HDRezka password' },
       hdrezka_login: { ru: 'Войти в HDRezka', en: 'Log in to HDRezka' },
@@ -2756,47 +2746,63 @@
     Lampa.Template.add('hdrezka_folder', '<div class="online selector"><div class="online__body"><div class="online__title">{title}</div><div class="online__quality">{quality}{info}</div></div></div>');
   }
 
+  function hdrezkaLogoSvg(class_name) {
+    return '<svg class="' + (class_name || '') + '" viewBox="0 0 244 260" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M242 88v170H10V88h41L13 126h37l38-38h38l-38 38h38l38-38h38l-38 38h38l38-38zM229 2l8 38-46-30 38-8zM161 56l-46-30 38-8 46 30-38 8zM85 72 39 42l38-8 46 30-38 8zM10 88 2 50l46 30-38 8z"/></svg>';
+  }
+
+  function hdrezkaEnsureStyles() {
+    if (typeof document === 'undefined' || document.getElementById('hdrezka-plugin-styles')) return;
+
+    var style = document.createElement('style');
+    var css = '';
+    css += '.full-start__button.hdrezka-card-button{background:linear-gradient(135deg,#1d8a3a,#0f5e25);color:#fff;border-color:transparent;}';
+    css += '.full-start__button.hdrezka-card-button.focus,.full-start__button.hdrezka-card-button:hover{background:linear-gradient(135deg,#2cac52,#167d32);color:#fff;box-shadow:0 0 0 .12em rgba(91,220,121,.7);}';
+    css += '.hdrezka-card-button .hdrezka-card-logo{width:1.15em;height:1.15em;min-width:1.15em;margin-right:.42em;vertical-align:middle;}';
+    style.id = 'hdrezka-plugin-styles';
+    style.type = 'text/css';
+    if (style.styleSheet) style.styleSheet.cssText = css;else style.appendChild(document.createTextNode(css));
+    (document.head || document.getElementsByTagName('head')[0] || document.documentElement).appendChild(style);
+  }
+
+  function openHdrezkaForMovie(movie) {
+    if (!movie) return;
+    Lampa.Activity.push({
+      url: '',
+      title: 'HDRezka',
+      component: 'hdrezka',
+      search: movie.title,
+      search_one: movie.title,
+      search_two: movie.original_title,
+      movie: movie,
+      page: 1
+    });
+  }
+
+  function addHdrezkaCardButton(event) {
+    if (!event || !event.object || !event.object.activity || !event.data || !event.data.movie) return;
+
+    var root = event.object.activity.render();
+    if (root.find('.view--hdrezka').length) return;
+
+    hdrezkaEnsureStyles();
+    var button = $('<div class="full-start__button selector hdrezka-card-button view--hdrezka"><span class="hdrezka-card-logo-wrap">' + hdrezkaLogoSvg('hdrezka-card-logo') + '</span><span>HDRezka</span></div>');
+    button.on('hover:enter', function () { openHdrezkaForMovie(event.data.movie); });
+
+    var buttons = root.find('.full-start-new__buttons, .full-start__buttons').eq(0);
+    if (buttons.length) {
+      buttons.prepend(button);
+      return;
+    }
+
+    var watch = root.find('.view--torrent').eq(0);
+    if (watch.length) watch.before(button);
+  }
+
   function initMain() {
     resetTemplates();
     Lampa.Component.add('hdrezka', component);
-    Lampa.Manifest.plugins = {
-      type: 'video',
-      version: mod_version,
-      name: 'HDRezka',
-      description: Lampa.Lang.translate('hdrezka_watch'),
-      component: 'hdrezka',
-      onContextMenu: function () {
-        return { name: Lampa.Lang.translate('hdrezka_watch'), description: '' };
-      },
-      onContextLauch: function (object) {
-        Lampa.Activity.push({
-          url: '',
-          title: 'HDRezka',
-          component: 'hdrezka',
-          search: object.title,
-          search_one: object.title,
-          search_two: object.original_title,
-          movie: object,
-          page: 1
-        });
-      }
-    };
     Lampa.Listener.follow('full', function (event) {
-      if (event.type !== 'complite') return;
-      var button = $('<div class="full-start__button selector view--hdrezka"><span>HDRezka</span></div>');
-      button.on('hover:enter', function () {
-        Lampa.Activity.push({
-          url: '',
-          title: 'HDRezka',
-          component: 'hdrezka',
-          search: event.data.movie.title,
-          search_one: event.data.movie.title,
-          search_two: event.data.movie.original_title,
-          movie: event.data.movie,
-          page: 1
-        });
-      });
-      event.object.activity.render().find('.view--torrent').after(button);
+      if (event.type === 'complite') addHdrezkaCardButton(event);
     });
   }
 
@@ -2813,15 +2819,10 @@
     if (Lampa.SettingsApi.getComponent(componentName)) return;
     Lampa.SettingsApi.addComponent({
       component: componentName,
-      icon: '<svg><use xlink:href="#sprite-settings"></use></svg>',
+      icon: hdrezkaLogoSvg('hdrezka-settings-logo'),
       name: 'HDRezka'
     });
     addInput(componentName, 'hdrezka_mirror', Lampa.Lang.translate('hdrezka_mirror'));
-    Lampa.SettingsApi.addParam({
-      component: componentName,
-      param: { name: 'hdrezka_local_proxy_enabled', type: 'trigger', default: false },
-      field: { name: Lampa.Lang.translate('hdrezka_local_proxy_enabled') }
-    });
     addInput(componentName, 'hdrezka_local_proxy_1', Lampa.Lang.translate('hdrezka_local_proxy_1'));
     addInput(componentName, 'hdrezka_local_proxy_2', Lampa.Lang.translate('hdrezka_local_proxy_2'));
     addInput(componentName, 'hdrezka_local_proxy_3', Lampa.Lang.translate('hdrezka_local_proxy_3'));
