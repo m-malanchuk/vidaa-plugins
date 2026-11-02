@@ -2864,7 +2864,7 @@
       component: parentComponent,
       param: { name: childComponent + '_open', type: 'button' },
       field: {
-        name: '<div class="settings-folder" style="padding:0!important"><div style="width:1.8em;height:1.3em;padding-right:.5em">' + hdrezkaMarkSvg('hdrezka-settings-logo') + '</div><div style="font-size:1.3em">' + title + '</div></div>'
+        name: '<div class="settings-folder" style="padding:0!important"><div style="font-size:1.3em">' + title + '</div></div>'
       },
       onChange: function () {
         Lampa.Settings.create(childComponent, {
