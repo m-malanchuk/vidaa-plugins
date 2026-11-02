@@ -2747,7 +2747,10 @@
   }
 
   function hdrezkaLogoSvg(class_name) {
-    return '<svg class="' + (class_name || '') + '" viewBox="0 0 244 260" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M242 88v170H10V88h41L13 126h37l38-38h38l-38 38h38l38-38h38l-38 38h38l38-38zM229 2l8 38-46-30 38-8zM161 56l-46-30 38-8 46 30-38 8zM85 72 39 42l38-8 46 30-38 8zM10 88 2 50l46 30-38 8z"/></svg>';
+    return '<svg class="' + (class_name || '') + '" viewBox="0 0 256 256" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">' +
+      '<circle cx="128" cy="128" r="104" fill="none" stroke="currentColor" stroke-width="8"/>' +
+      '<path transform="translate(-2 0)" fill="currentColor" fill-rule="evenodd" d="M58 76H74V120H96V76H112V180H96V136H74V180H58V76ZM126 76H158C185 76 202 95 202 128C202 161 185 180 158 180H126V76ZM142 92V164H156C172.5 164 186 151 186 128C186 105 172.5 92 156 92H142Z"/>' +
+      '</svg>';
   }
 
   function hdrezkaEnsureStyles() {
@@ -2755,9 +2758,11 @@
 
     var style = document.createElement('style');
     var css = '';
-    css += '.full-start__button.hdrezka-card-button{background:linear-gradient(135deg,#1d8a3a,#0f5e25);color:#fff;border-color:transparent;}';
+    css += '.full-start__button.hdrezka-card-button{background:linear-gradient(135deg,#1d8a3a,#0f5e25);color:#fff;border-color:transparent;display:flex;align-items:center;min-width:0;overflow:hidden;}';
     css += '.full-start__button.hdrezka-card-button.focus,.full-start__button.hdrezka-card-button:hover{background:linear-gradient(135deg,#2cac52,#167d32);color:#fff;box-shadow:0 0 0 .12em rgba(91,220,121,.7);}';
-    css += '.hdrezka-card-button .hdrezka-card-logo{width:1.15em;height:1.15em;min-width:1.15em;margin-right:.42em;vertical-align:middle;}';
+    css += '.hdrezka-card-button .hdrezka-card-logo{display:block;width:1.15em;height:1.15em;min-width:1.15em;flex:0 0 1.15em;margin-right:.42em;vertical-align:middle;color:#fff;transition:color .22s ease,filter .22s ease;}';
+    css += '.full-start__button.hdrezka-card-button.focus .hdrezka-card-logo,.full-start__button.hdrezka-card-button:hover .hdrezka-card-logo{color:#c9273f;filter:drop-shadow(0 0 .18em rgba(201,39,63,.65));}';
+    css += '.hdrezka-card-button .hdrezka-card-label{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}';
     style.id = 'hdrezka-plugin-styles';
     style.type = 'text/css';
     if (style.styleSheet) style.styleSheet.cssText = css;else style.appendChild(document.createTextNode(css));
@@ -2785,7 +2790,7 @@
     if (root.find('.view--hdrezka').length) return;
 
     hdrezkaEnsureStyles();
-    var button = $('<div class="full-start__button selector hdrezka-card-button view--hdrezka"><span class="hdrezka-card-logo-wrap">' + hdrezkaLogoSvg('hdrezka-card-logo') + '</span><span>HDRezka</span></div>');
+    var button = $('<div class="full-start__button selector hdrezka-card-button view--hdrezka">' + hdrezkaLogoSvg('hdrezka-card-logo') + '<span class="hdrezka-card-label">HDRezka</span></div>');
     button.on('hover:enter', function () { openHdrezkaForMovie(event.data.movie); });
 
     var buttons = root.find('.full-start-new__buttons, .full-start__buttons').eq(0);
@@ -2828,7 +2833,6 @@
     addInput(componentName, 'hdrezka_local_proxy_3', Lampa.Lang.translate('hdrezka_local_proxy_3'));
     addInput(componentName, 'hdrezka_name', Lampa.Lang.translate('hdrezka_name'));
     addInput(componentName, 'hdrezka_password', Lampa.Lang.translate('hdrezka_password'));
-    addInput(componentName, 'hdrezka_cookie', Lampa.Lang.translate('hdrezka_cookie'));
     Lampa.SettingsApi.addParam({
       component: componentName,
       param: { name: 'hdrezka_prefer_http', type: 'trigger', default: window.location.protocol !== 'https:' },
@@ -2864,6 +2868,7 @@
       field: { name: Lampa.Lang.translate('hdrezka_fill_cookie') },
       onChange: function () { hdrezkaFillCookie(function () { Lampa.Noty.show('HDRezka: cookie получен'); }, function () { Lampa.Noty.show('HDRezka: cookie получить не удалось'); }); }
     });
+    addInput(componentName, 'hdrezka_cookie', Lampa.Lang.translate('hdrezka_cookie'));
   }
 
   function startPlugin() {
