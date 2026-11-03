@@ -2817,7 +2817,7 @@
       hdrezka_login: { ru: 'Войти в HDRezka', en: 'Log in to HDRezka' },
       hdrezka_logout: { ru: 'Выйти из HDRezka', en: 'Log out of HDRezka' },
       hdrezka_cookie: { ru: 'Cookie HDRezka', en: 'HDRezka cookie' },
-      hdrezka_fill_cookie: { ru: 'Получить cookie', en: 'Get cookie' },
+      hdrezka_fill_cookie: { ru: 'Обновить cookies', en: 'Refresh cookies' },
       hdrezka_settings_title: { ru: 'HDRezka', en: 'HDRezka' },
       hdrezka_settings_auth: { ru: 'Авторизация', en: 'Authorization' },
       hdrezka_settings_proxy: { ru: 'Прокси', en: 'Proxy' },
@@ -2838,7 +2838,11 @@
       hdrezka_file_helper: { ru: 'Удерживайте OK для контекстного меню', en: 'Hold OK for context menu' },
       hdrezka_voice_subscribe: { ru: 'Подписаться на перевод', en: 'Subscribe to translation' },
       hdrezka_voice_success: { ru: 'Вы успешно подписались', en: 'Subscribed' },
-      hdrezka_voice_error: { ru: 'Возникла ошибка', en: 'An error occurred' }
+      hdrezka_voice_error: { ru: 'Возникла ошибка', en: 'An error occurred' },
+      hdrezka_clearmark_all: { ru: 'Снять отметку со всех', en: 'Clear all marks' },
+      hdrezka_timeclear_all: { ru: 'Сбросить таймкод у всех', en: 'Reset timecodes for all' },
+      hdrezka_query_start: { ru: 'Введите название', en: 'Enter a title' },
+      hdrezka_query_end: { ru: 'для поиска', en: 'to search' }
     });
   }
 
