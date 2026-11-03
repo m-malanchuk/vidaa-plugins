@@ -25,6 +25,15 @@
       return url;
     }
 
+    function hdrezkaHideStudioVoicesEnabled() {
+      var value = Lampa.Storage.get('hdrezka_hide_studio_voices', false);
+      return value === true || value === 1 || value === '1' || value === 'true';
+    }
+
+    function hdrezkaIsStudioVoice(name) {
+      return /hdrezka\s*studio/i.test((name || '') + '');
+    }
+
     // BEGIN HDREZKA LOCAL PROXY LOGIC
     function normalizeHdrezkaLocalProxy(value) {
       var url = (value || '').toString().trim();
@@ -882,7 +891,7 @@
           return;
         }
         extractData(str);
-        if (extract.film_id) getEpisodes(success);else if (error_message) component.empty(error_message);else component.emptyForQuery(select_title);
+        if (extract.film_id && extract.voice.length) getEpisodes(success);else if (error_message) component.empty(error_message);else if (extract.film_id) component.empty(Lampa.Lang.translate('hdrezka_no_visible_voices'));else component.emptyForQuery(select_title);
       }
 
       var current_page_url = '';
@@ -1036,6 +1045,9 @@
 
         var voices = str.match(/(<ul id="translators-list".*?<\/ul>)/);
 
+        var voiceItemsFound = false;
+        var hideStudioVoices = hdrezkaHideStudioVoicesEnabled();
+
         if (voices) {
           var select = $(voices[1]);
           $('.b-translator__item', select).each(function () {
@@ -1044,17 +1056,20 @@
               var lang = ($(this).attr('title') || $(this).attr('alt') || '').trim();
               if (lang && title.indexOf(lang) == -1) title += ' (' + lang + ')';
             });
-            extract.voice.push({
-              name: title,
-              id: $(this).attr('data-translator_id'),
-              is_camrip: $(this).attr('data-camrip'),
-              is_ads: $(this).attr('data-ads'),
-              is_director: $(this).attr('data-director')
-            });
+            voiceItemsFound = true;
+            if (!hideStudioVoices || !hdrezkaIsStudioVoice(title)) {
+              extract.voice.push({
+                name: title,
+                id: $(this).attr('data-translator_id'),
+                is_camrip: $(this).attr('data-camrip'),
+                is_ads: $(this).attr('data-ads'),
+                is_director: $(this).attr('data-director')
+              });
+            }
           });
         }
 
-        if (!extract.voice.length && defVoice) {
+        if (!extract.voice.length && defVoice && (!hideStudioVoices || (!voiceItemsFound && !hdrezkaIsStudioVoice(defVoice.name)))) {
           extract.voice.push(defVoice);
         }
 
@@ -2733,6 +2748,8 @@
       hdrezka_reload: { ru: 'Обновить HDRezka', en: 'Reload HDRezka' },
       hdrezka_prefer_http: { ru: 'Предпочитать HTTP для видео', en: 'Prefer HTTP for video' },
       hdrezka_prefer_mp4: { ru: 'Предпочитать MP4', en: 'Prefer MP4' },
+      hdrezka_hide_studio_voices: { ru: 'Скрывать озвучки HDRezka Studio', en: 'Hide HDRezka Studio voices' },
+      hdrezka_no_visible_voices: { ru: 'Нет доступных озвучек после применения фильтра', en: 'No voices remain after applying the filter' },
       hdrezka_full_episode_title: { ru: 'Показывать полное название серии', en: 'Show full episode title' },
       settings_cub_not_specified: { ru: 'Не задано', en: 'Not specified' },
       settings_player_quality: { ru: 'Качество', en: 'Quality' },
@@ -2923,6 +2940,7 @@
     if (addSettingsGroup(miscComponent, Lampa.Lang.translate('hdrezka_settings_misc'))) {
       addTrigger(miscComponent, 'hdrezka_prefer_http', Lampa.Lang.translate('hdrezka_prefer_http'), window.location.protocol !== 'https:');
       addTrigger(miscComponent, 'hdrezka_prefer_mp4', Lampa.Lang.translate('hdrezka_prefer_mp4'), true);
+      addTrigger(miscComponent, 'hdrezka_hide_studio_voices', Lampa.Lang.translate('hdrezka_hide_studio_voices'), false);
       addTrigger(miscComponent, 'hdrezka_full_episode_title', Lampa.Lang.translate('hdrezka_full_episode_title'), false);
     }
 
