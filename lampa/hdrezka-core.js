@@ -6,7 +6,7 @@
   if (typeof window !== 'undefined') window.hdrezka_core_started = true;
 
   // Manual release marker: update it to the source revision being published.
-  var hdrezkaRelease = 'b8b608c';
+  var hdrezkaRelease = 'ac5d1fd';
   var network = new Lampa.Reguest();
 
     function startsWith(str, searchString) {
