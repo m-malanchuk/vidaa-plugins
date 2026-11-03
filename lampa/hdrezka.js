@@ -1,4 +1,5 @@
 // HDRezka stable loader.
+// Lampa. This marker keeps the entry point compatible with Lampa's source check.
 (function () {
   'use strict';
 
