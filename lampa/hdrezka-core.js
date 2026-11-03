@@ -5,6 +5,8 @@
   if (typeof window !== 'undefined' && window.hdrezka_core_started) return;
   if (typeof window !== 'undefined') window.hdrezka_core_started = true;
 
+  // Manual release marker: update it to the source revision being published.
+  var hdrezkaRelease = 'b8b608c';
   var network = new Lampa.Reguest();
 
     function startsWith(str, searchString) {
@@ -927,7 +929,7 @@
 
       function getPageWithCookies(url, redirectCount) {
         if (redirectCount > 12) {
-          component.empty('HDrezka: превышен лимит служебных перенаправлений');
+          component.empty(Lampa.Lang.translate('hdrezka_redirect_limit'));
           return;
         }
         hdrezkaDebug('page redirect step', { step: redirectCount, target: url });
@@ -936,7 +938,7 @@
             try { json = JSON.parse(json); } catch (e) {}
           }
           if (!json || typeof json !== 'object') {
-            component.empty('HDrezka: некорректный ответ прокси');
+            component.empty(Lampa.Lang.translate('hdrezka_proxy_invalid_response'));
             return;
           }
           mergeResponseCookies(json);
@@ -953,7 +955,7 @@
 
       function passAnubis(url) {
         if (!prox || anubis_attempted) {
-          component.empty('HDrezka: проверка Anubis не пройдена');
+          component.empty(Lampa.Lang.translate('hdrezka_anubis_failed'));
           return;
         }
         anubis_attempted = true;
@@ -967,12 +969,12 @@
           mergeResponseCookies(json);
           var challengeMatch = body.match(/<script id="anubis_challenge" type="application\/json">([\s\S]*?)<\/script>/);
           if (!challengeMatch) {
-            component.empty('HDrezka: данные проверки Anubis не найдены');
+            component.empty(Lampa.Lang.translate('hdrezka_anubis_data_missing'));
             return;
           }
           var payload;
           try { payload = JSON.parse(challengeMatch[1]); } catch (e) {
-            component.empty('HDrezka: ошибка чтения Anubis challenge');
+            component.empty(Lampa.Lang.translate('hdrezka_anubis_read_error'));
             return;
           }
           var challenge = payload.challenge || {};
@@ -995,14 +997,14 @@
               getPageWithCookies(url, 0);
             }, function (a, c) {
               hdrezkaDebug('Anubis pass error', { status: a && a.status, response: a && a.responseText, error: c });
-              component.empty('HDrezka: не удалось подтвердить Anubis');
+              component.empty(Lampa.Lang.translate('hdrezka_anubis_confirm_failed'));
             }, false, { dataType: 'text', headers: headers }, cookieProxyEncoding('get_redirect/cookie_plus/'), 20000);
           }, function (message) {
-            component.empty('HDrezka: ошибка вычисления Anubis — ' + message);
+            component.empty(Lampa.Lang.translate('hdrezka_anubis_compute_error') + message);
           });
         }, function (a, c) {
           hdrezkaDebug('Anubis challenge request error', { status: a && a.status, response: a && a.responseText, error: c });
-          component.empty('HDrezka: не удалось получить Anubis challenge');
+          component.empty(Lampa.Lang.translate('hdrezka_anubis_challenge_failed'));
         }, false, { dataType: 'text', headers: headers }, cookieProxyEncoding('cookie_plus/'), 20000);
       }
 
@@ -1103,7 +1105,7 @@
           devVoiceName = $(translation[1]).text().trim();
         }
 
-        if (!devVoiceName) devVoiceName = 'Оригинал';
+        if (!devVoiceName) devVoiceName = Lampa.Lang.translate('hdrezka_original_voice');
         var defVoice, defSeason, defEpisode;
 
         if (cdnSeries) {
@@ -1114,11 +1116,11 @@
             id: cdnSeries[2]
           };
           defSeason = {
-            name: 'Сезон ' + cdnSeries[3],
+            name: Lampa.Lang.translate('hdrezka_season_label') + ' ' + cdnSeries[3],
             id: cdnSeries[3]
           };
           defEpisode = {
-            name: 'Серия ' + cdnSeries[4],
+            name: Lampa.Lang.translate('hdrezka_episode_label') + ' ' + cdnSeries[4],
             season_id: cdnSeries[3],
             episode_id: cdnSeries[4]
           };
@@ -1374,14 +1376,14 @@
               if (regular_items.length) {
                 file = regular_items[0].file;
               } else if (json.premium_content) {
-                error('Перевод доступен только с HDrezka Premium');
+                error(Lampa.Lang.translate('hdrezka_premium_required'));
                 return;
               }
             }
 
             if (file) {
               if (!/^https?:\/\//i.test(file)) {
-                error('HDRezka: получен некорректный прямой URL потока');
+                error(Lampa.Lang.translate('hdrezka_invalid_stream_url'));
                 return;
               }
               element.stream = file;
@@ -1788,11 +1790,11 @@
           login: !!login_name,
           password: !!login_password
         });
-        Lampa.Noty.show('HDrezka: логин или пароль не сохранён в настройках');
+        Lampa.Noty.show(Lampa.Lang.translate('hdrezka_credentials_missing'));
         if (error) error({
           status: 0,
-          responseText: 'Пустой логин или пароль'
-        }, 'Проверьте поля логина и пароля');
+          responseText: Lampa.Lang.translate('hdrezka_empty_credentials')
+        }, Lampa.Lang.translate('hdrezka_check_credentials'));
         return;
       }
 
@@ -1818,7 +1820,7 @@
           if (error) error({
             status: json && json.status || 0,
             responseText: typeof json === 'string' ? json : JSON.stringify(body)
-          }, 'HDrezka отклонила авторизацию');
+          }, Lampa.Lang.translate('hdrezka_auth_rejected'));
           return;
         }
 
@@ -1971,8 +1973,8 @@
           hdrezkaDebug('cookie missing', json);
           if (error) error({
             status: json && json.status || 0,
-            responseText: 'Успешный ответ без доступного Set-Cookie'
-          }, 'Set-Cookie не найден в ответе');
+            responseText: Lampa.Lang.translate('hdrezka_cookie_header_empty')
+          }, Lampa.Lang.translate('hdrezka_cookie_header_missing'));
         }
       }, function (a, c) {
         hdrezkaDebug('login network error', {
@@ -2667,7 +2669,7 @@
               }
 
               if (a.copylink) {
-                params.file(selectQuality('Ссылки', function (b, extra) {
+                params.file(selectQuality(Lampa.Lang.translate('copy_link'), function (b, extra) {
                   Lampa.Utils.copyTextToClipboard(b && b.file || extra && extra.file, function () {
                     Lampa.Noty.show(Lampa.Lang.translate('copy_secuses'));
                   }, function () {
@@ -2801,48 +2803,73 @@
   function initLang() {
     if (!Lampa.Lang || !Lampa.Lang.add) return;
     Lampa.Lang.add({
-      hdrezka_title_full: { ru: 'HDRezka', en: 'HDRezka' },
-      hdrezka_nolink: { ru: 'Не удалось получить ссылку', en: 'Failed to get link' },
-      hdrezka_blockedlink: { ru: 'Видео недоступно', en: 'Video unavailable' },
-      hdrezka_authorization_required: { ru: 'Требуется авторизация', en: 'Authorization required' },
-      hdrezka_unsupported_mirror: { ru: 'Неподдерживаемое зеркало', en: 'Unsupported mirror' },
-      hdrezka_local_proxy_missing_error: { ru: 'HDRezka: настройте хотя бы один телефон Lampa Bridge', en: 'HDRezka: configure at least one Lampa Bridge phone' },
-      hdrezka_local_proxy_unavailable_error: { ru: 'HDRezka: локальные прокси недоступны', en: 'HDRezka: local proxies are unavailable' },
-      hdrezka_mirror: { ru: 'Зеркало HDRezka', en: 'HDRezka mirror' },
-      hdrezka_local_proxy_1: { ru: 'Телефон 1 (Lampa Bridge)', en: 'Phone 1 (Lampa Bridge)' },
-      hdrezka_local_proxy_2: { ru: 'Телефон 2 (Lampa Bridge)', en: 'Phone 2 (Lampa Bridge)' },
-      hdrezka_local_proxy_3: { ru: 'Телефон 3 (Lampa Bridge)', en: 'Phone 3 (Lampa Bridge)' },
-      hdrezka_name: { ru: 'Логин HDRezka', en: 'HDRezka login' },
-      hdrezka_password: { ru: 'Пароль HDRezka', en: 'HDRezka password' },
-      hdrezka_login: { ru: 'Войти в HDRezka', en: 'Log in to HDRezka' },
-      hdrezka_logout: { ru: 'Выйти из HDRezka', en: 'Log out of HDRezka' },
-      hdrezka_cookie: { ru: 'Cookie HDRezka', en: 'HDRezka cookie' },
-      hdrezka_fill_cookie: { ru: 'Обновить cookies', en: 'Refresh cookies' },
-      hdrezka_settings_title: { ru: 'HDRezka', en: 'HDRezka' },
-      hdrezka_settings_auth: { ru: 'Авторизация', en: 'Authorization' },
-      hdrezka_settings_proxy: { ru: 'Прокси', en: 'Proxy' },
-      hdrezka_settings_misc: { ru: 'Разное', en: 'Miscellaneous' },
-      hdrezka_reload: { ru: 'Обновить HDRezka', en: 'Reload HDRezka' },
-      hdrezka_prefer_http: { ru: 'Предпочитать HTTP для видео', en: 'Prefer HTTP for video' },
-      hdrezka_prefer_mp4: { ru: 'Предпочитать MP4', en: 'Prefer MP4' },
-      hdrezka_hide_studio_voices: { ru: 'Скрывать озвучки HDRezka Studio', en: 'Hide HDRezka Studio voices' },
-      hdrezka_no_visible_voices: { ru: 'Нет доступных озвучек после применения фильтра', en: 'No voices remain after applying the filter' },
-      hdrezka_full_episode_title: { ru: 'Показывать полное название серии', en: 'Show full episode title' },
-      settings_cub_not_specified: { ru: 'Не задано', en: 'Not specified' },
-      torrent_parser_voice: { ru: 'Озвучка', en: 'Voice' },
-      torrent_parser_season: { ru: 'Сезон', en: 'Season' },
-      settings_rest_source: { ru: 'Источник', en: 'Source' },
-      hdrezka_seasons_count: { ru: 'Сезонов', en: 'Seasons' },
-      hdrezka_episodes_count: { ru: 'Эпизодов', en: 'Episodes' },
-      hdrezka_show_more: { ru: 'Показать ещё', en: 'Show more' },
-      hdrezka_file_helper: { ru: 'Удерживайте OK для контекстного меню', en: 'Hold OK for context menu' },
-      hdrezka_voice_subscribe: { ru: 'Подписаться на перевод', en: 'Subscribe to translation' },
-      hdrezka_voice_success: { ru: 'Вы успешно подписались', en: 'Subscribed' },
-      hdrezka_voice_error: { ru: 'Возникла ошибка', en: 'An error occurred' },
-      hdrezka_clearmark_all: { ru: 'Снять отметку со всех', en: 'Clear all marks' },
-      hdrezka_timeclear_all: { ru: 'Сбросить таймкод у всех', en: 'Reset timecodes for all' },
-      hdrezka_query_start: { ru: 'Введите название', en: 'Enter a title' },
-      hdrezka_query_end: { ru: 'для поиска', en: 'to search' }
+      hdrezka_title_full: { ru: 'HDRezka', en: 'HDRezka', uk: 'HDRezka' },
+      hdrezka_nolink: { ru: 'Не удалось получить ссылку', en: 'Failed to get link', uk: 'Не вдалося отримати посилання' },
+      hdrezka_blockedlink: { ru: 'Видео недоступно', en: 'Video unavailable', uk: 'Відео недоступне' },
+      hdrezka_authorization_required: { ru: 'Требуется авторизация', en: 'Authorization required', uk: 'Потрібна авторизація' },
+      hdrezka_unsupported_mirror: { ru: 'Неподдерживаемое зеркало', en: 'Unsupported mirror', uk: 'Дзеркало не підтримується' },
+      hdrezka_local_proxy_missing_error: { ru: 'HDRezka: настройте хотя бы один телефон Lampa Bridge', en: 'HDRezka: configure at least one Lampa Bridge phone', uk: 'HDRezka: налаштуйте хоча б один телефон Lampa Bridge' },
+      hdrezka_local_proxy_unavailable_error: { ru: 'HDRezka: локальные прокси недоступны', en: 'HDRezka: local proxies are unavailable', uk: 'HDRezka: локальні проксі недоступні' },
+      hdrezka_mirror: { ru: 'Зеркало HDRezka', en: 'HDRezka mirror', uk: 'Дзеркало HDRezka' },
+      hdrezka_local_proxy_1: { ru: 'Телефон 1 (Lampa Bridge)', en: 'Phone 1 (Lampa Bridge)', uk: 'Телефон 1 (Lampa Bridge)' },
+      hdrezka_local_proxy_2: { ru: 'Телефон 2 (Lampa Bridge)', en: 'Phone 2 (Lampa Bridge)', uk: 'Телефон 2 (Lampa Bridge)' },
+      hdrezka_local_proxy_3: { ru: 'Телефон 3 (Lampa Bridge)', en: 'Phone 3 (Lampa Bridge)', uk: 'Телефон 3 (Lampa Bridge)' },
+      hdrezka_name: { ru: 'Логин HDRezka', en: 'HDRezka login', uk: 'Логін HDRezka' },
+      hdrezka_password: { ru: 'Пароль HDRezka', en: 'HDRezka password', uk: 'Пароль HDRezka' },
+      hdrezka_login: { ru: 'Войти в HDRezka', en: 'Log in to HDRezka', uk: 'Увійти до HDRezka' },
+      hdrezka_logout: { ru: 'Выйти из HDRezka', en: 'Log out of HDRezka', uk: 'Вийти з HDRezka' },
+      hdrezka_cookie: { ru: 'Cookie HDRezka', en: 'HDRezka cookie', uk: 'Cookie HDRezka' },
+      hdrezka_fill_cookie: { ru: 'Обновить cookies', en: 'Refresh cookies', uk: 'Оновити cookies' },
+      hdrezka_settings_title: { ru: 'HDRezka', en: 'HDRezka', uk: 'HDRezka' },
+      hdrezka_settings_auth: { ru: 'Авторизация', en: 'Authorization', uk: 'Авторизація' },
+      hdrezka_settings_proxy: { ru: 'Прокси', en: 'Proxy', uk: 'Проксі' },
+      hdrezka_settings_misc: { ru: 'Разное', en: 'Miscellaneous', uk: 'Різне' },
+      hdrezka_reload: { ru: 'Обновить HDRezka', en: 'Reload HDRezka', uk: 'Оновити HDRezka' },
+      hdrezka_prefer_http: { ru: 'Предпочитать HTTP для видео', en: 'Prefer HTTP for video', uk: 'Надавати перевагу HTTP для відео' },
+      hdrezka_prefer_mp4: { ru: 'Предпочитать MP4', en: 'Prefer MP4', uk: 'Надавати перевагу MP4' },
+      hdrezka_hide_studio_voices: { ru: 'Скрывать озвучки HDRezka Studio', en: 'Hide HDRezka Studio voices', uk: 'Приховувати озвучення HDRezka Studio' },
+      hdrezka_no_visible_voices: { ru: 'Нет доступных озвучек после применения фильтра', en: 'No voices remain after applying the filter', uk: 'Після застосування фільтра доступних озвучень немає' },
+      hdrezka_full_episode_title: { ru: 'Показывать полное название серии', en: 'Show full episode title', uk: 'Показувати повну назву серії' },
+      settings_cub_not_specified: { ru: 'Не задано', en: 'Not specified', uk: 'Не задано' },
+      torrent_parser_voice: { ru: 'Озвучка', en: 'Voice', uk: 'Озвучення' },
+      torrent_parser_season: { ru: 'Сезон', en: 'Season', uk: 'Сезон' },
+      settings_rest_source: { ru: 'Источник', en: 'Source', uk: 'Джерело' },
+      hdrezka_seasons_count: { ru: 'Сезонов', en: 'Seasons', uk: 'Сезонів' },
+      hdrezka_episodes_count: { ru: 'Эпизодов', en: 'Episodes', uk: 'Епізодів' },
+      hdrezka_show_more: { ru: 'Показать ещё', en: 'Show more', uk: 'Показати ще' },
+      hdrezka_file_helper: { ru: 'Удерживайте OK для контекстного меню', en: 'Hold OK for context menu', uk: 'Утримуйте OK для контекстного меню' },
+      hdrezka_voice_subscribe: { ru: 'Подписаться на перевод', en: 'Subscribe to translation', uk: 'Підписатися на переклад' },
+      hdrezka_voice_success: { ru: 'Вы успешно подписались', en: 'Subscribed', uk: 'Ви успішно підписалися' },
+      hdrezka_voice_error: { ru: 'Возникла ошибка', en: 'An error occurred', uk: 'Сталася помилка' },
+      hdrezka_clearmark_all: { ru: 'Снять отметку со всех', en: 'Clear all marks', uk: 'Зняти позначку з усіх' },
+      hdrezka_timeclear_all: { ru: 'Сбросить таймкод у всех', en: 'Reset timecodes for all', uk: 'Скинути таймкод у всіх' },
+      hdrezka_query_start: { ru: 'Введите название', en: 'Enter a title', uk: 'Введіть назву' },
+      hdrezka_query_end: { ru: 'для поиска', en: 'to search', uk: 'для пошуку' },
+      hdrezka_redirect_limit: { ru: 'HDRezka: превышен лимит служебных перенаправлений', en: 'HDRezka: internal redirect limit exceeded', uk: 'HDRezka: перевищено ліміт службових перенаправлень' },
+      hdrezka_proxy_invalid_response: { ru: 'HDRezka: некорректный ответ прокси', en: 'HDRezka: invalid proxy response', uk: 'HDRezka: отримано некоректну відповідь проксі' },
+      hdrezka_anubis_failed: { ru: 'HDRezka: проверка Anubis не пройдена', en: 'HDRezka: Anubis verification failed', uk: 'HDRezka: перевірку Anubis не пройдено' },
+      hdrezka_anubis_data_missing: { ru: 'HDRezka: данные проверки Anubis не найдены', en: 'HDRezka: Anubis verification data not found', uk: 'HDRezka: дані перевірки Anubis не знайдено' },
+      hdrezka_anubis_read_error: { ru: 'HDRezka: ошибка чтения Anubis challenge', en: 'HDRezka: failed to read Anubis challenge', uk: 'HDRezka: помилка читання Anubis challenge' },
+      hdrezka_anubis_confirm_failed: { ru: 'HDRezka: не удалось подтвердить Anubis', en: 'HDRezka: failed to confirm Anubis', uk: 'HDRezka: не вдалося підтвердити Anubis' },
+      hdrezka_anubis_compute_error: { ru: 'HDRezka: ошибка вычисления Anubis — ', en: 'HDRezka: Anubis computation error — ', uk: 'HDRezka: помилка обчислення Anubis — ' },
+      hdrezka_anubis_challenge_failed: { ru: 'HDRezka: не удалось получить Anubis challenge', en: 'HDRezka: failed to get Anubis challenge', uk: 'HDRezka: не вдалося отримати Anubis challenge' },
+      hdrezka_original_voice: { ru: 'Оригинал', en: 'Original', uk: 'Оригінал' },
+      hdrezka_season_label: { ru: 'Сезон', en: 'Season', uk: 'Сезон' },
+      hdrezka_episode_label: { ru: 'Серия', en: 'Episode', uk: 'Серія' },
+      hdrezka_premium_required: { ru: 'Перевод доступен только с HDrezka Premium', en: 'This translation is available only with HDRezka Premium', uk: 'Переклад доступний лише з HDRezka Premium' },
+      hdrezka_invalid_stream_url: { ru: 'HDRezka: получен некорректный прямой URL потока', en: 'HDRezka: invalid direct stream URL received', uk: 'HDRezka: отримано некоректну пряму URL-адресу потоку' },
+      hdrezka_login_success: { ru: 'HDRezka: вход выполнен', en: 'HDRezka: login successful', uk: 'HDRezka: вхід виконано' },
+      hdrezka_login_failed: { ru: 'HDRezka: вход не выполнен', en: 'HDRezka: login failed', uk: 'HDRezka: не вдалося увійти до HDRezka' },
+      hdrezka_logout_success: { ru: 'HDRezka: выход выполнен', en: 'HDRezka: logout successful', uk: 'HDRezka: вихід виконано' },
+      hdrezka_logout_cookies_cleared: { ru: 'HDRezka: локальные cookies очищены', en: 'HDRezka: local cookies cleared', uk: 'HDRezka: локальні cookies очищено' },
+      hdrezka_cookie_success: { ru: 'HDRezka: cookie получен', en: 'HDRezka: cookie received', uk: 'HDRezka: cookie отримано' },
+      hdrezka_cookie_failed: { ru: 'HDRezka: cookie получить не удалось', en: 'HDRezka: failed to receive cookie', uk: 'HDRezka: не вдалося отримати cookie HDRezka' },
+      hdrezka_credentials_missing: { ru: 'HDRezka: логин или пароль не сохранён в настройках', en: 'HDRezka: login or password is not saved in settings', uk: 'HDRezka: логін або пароль не збережено в налаштуваннях' },
+      hdrezka_empty_credentials: { ru: 'Пустой логин или пароль', en: 'Empty login or password', uk: 'Порожній логін або пароль' },
+      hdrezka_check_credentials: { ru: 'Проверьте поля логина и пароля', en: 'Check the login and password fields', uk: 'Перевірте поля логіну та пароля' },
+      hdrezka_auth_rejected: { ru: 'HDRezka отклонила авторизацию', en: 'HDRezka rejected the login', uk: 'HDRezka відхилила авторизацію' },
+      hdrezka_cookie_header_missing: { ru: 'Set-Cookie не найден в ответе', en: 'Set-Cookie was not found in the response', uk: 'Set-Cookie не знайдено у відповіді' },
+      hdrezka_cookie_header_empty: { ru: 'Успешный ответ без доступного Set-Cookie', en: 'Successful response without an available Set-Cookie header', uk: 'Успішна відповідь без доступного Set-Cookie' }
     });
   }
 
@@ -2955,7 +2982,7 @@
       component: componentName,
       param: { name: 'hdrezka_build_info', type: 'static' },
       field: {
-        name: '<div style="padding:.55em 0 .15em!important;color:rgba(255,255,255,.45);font-size:.78em;pointer-events:none">HDRezka - b8b608c</div>'
+        name: '<div style="padding:.55em 0 .15em!important;color:rgba(255,255,255,.45);font-size:.78em;pointer-events:none">HDRezka - ' + hdrezkaRelease + '</div>'
       }
     });
   }
@@ -3010,13 +3037,13 @@
       addInput(authComponent, 'hdrezka_name', Lampa.Lang.translate('hdrezka_name'));
       addInput(authComponent, 'hdrezka_password', Lampa.Lang.translate('hdrezka_password'));
       addButton(authComponent, 'hdrezka_login', Lampa.Lang.translate('hdrezka_login'), function () {
-        hdrezkaLogin(function () { Lampa.Noty.show('HDRezka: вход выполнен'); }, function (a, c) { Lampa.Noty.show('HDRezka: вход не выполнен' + (c ? ': ' + c : '')); });
+        hdrezkaLogin(function () { Lampa.Noty.show(Lampa.Lang.translate('hdrezka_login_success')); }, function (a, c) { Lampa.Noty.show(Lampa.Lang.translate('hdrezka_login_failed') + (c ? ': ' + c : '')); });
       });
       addButton(authComponent, 'hdrezka_logout', Lampa.Lang.translate('hdrezka_logout'), function () {
-        hdrezkaLogout(function () { Lampa.Noty.show('HDRezka: выход выполнен'); }, function () { Lampa.Noty.show('HDRezka: локальные cookies очищены'); });
+        hdrezkaLogout(function () { Lampa.Noty.show(Lampa.Lang.translate('hdrezka_logout_success')); }, function () { Lampa.Noty.show(Lampa.Lang.translate('hdrezka_logout_cookies_cleared')); });
       });
       addButton(authComponent, 'hdrezka_fill_cookie', Lampa.Lang.translate('hdrezka_fill_cookie'), function () {
-        hdrezkaFillCookie(function () { Lampa.Noty.show('HDRezka: cookie получен'); }, function () { Lampa.Noty.show('HDRezka: cookie получить не удалось'); });
+        hdrezkaFillCookie(function () { Lampa.Noty.show(Lampa.Lang.translate('hdrezka_cookie_success')); }, function () { Lampa.Noty.show(Lampa.Lang.translate('hdrezka_cookie_failed')); });
       });
       addInput(authComponent, 'hdrezka_cookie', Lampa.Lang.translate('hdrezka_cookie'));
     }
