@@ -6,7 +6,7 @@
   if (typeof window !== 'undefined') window.hdrezka_core_started = true;
 
   // Manual release marker: update it to the source revision being published.
-  var hdrezkaRelease = 'bfb9d3f';
+  var hdrezkaRelease = '7f9c4a2';
   var network = new Lampa.Reguest();
 
     function startsWith(str, searchString) {
@@ -2902,7 +2902,7 @@
       component: componentName,
       param: { name: 'hdrezka_build_info', type: 'static' },
       field: {
-        name: '<div style="padding:.55em 0 .15em!important;color:rgba(255,255,255,.45);font-size:.78em;pointer-events:none">HDRezka - build ' + hdrezkaRelease + '</div>'
+        name: '<div style="padding:.55em 0 .15em!important;color:rgba(255,255,255,.45);font-size:.78em;pointer-events:none">build ' + hdrezkaRelease + '</div>'
       }
     });
   }
