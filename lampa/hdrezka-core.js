@@ -2870,6 +2870,16 @@
     });
   }
 
+  function addBuildInfo(componentName) {
+    Lampa.SettingsApi.addParam({
+      component: componentName,
+      param: { name: 'hdrezka_build_info', type: 'static' },
+      field: {
+        name: '<div style="padding:.55em 0 .15em!important;color:rgba(255,255,255,.45);font-size:.78em;pointer-events:none">HDRezka - b8b608c</div>'
+      }
+    });
+  }
+
   function addSettingsGroup(componentName, title) {
     if (Lampa.SettingsApi.getComponent(componentName)) return false;
     Lampa.SettingsApi.addComponent({
@@ -2913,6 +2923,7 @@
       addButton(rootComponent, 'hdrezka_reload', Lampa.Lang.translate('hdrezka_reload'), function () {
         if (window.location && typeof window.location.reload === 'function') window.location.reload(true);
       });
+      addBuildInfo(rootComponent);
     }
 
     if (addSettingsGroup(authComponent, Lampa.Lang.translate('hdrezka_settings_auth'))) {
