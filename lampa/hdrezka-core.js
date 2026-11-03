@@ -2902,7 +2902,7 @@
       component: componentName,
       param: { name: 'hdrezka_build_info', type: 'static' },
       field: {
-        name: '<div style="padding:.55em 0 .15em!important;color:rgba(255,255,255,.45);font-size:.78em;pointer-events:none">HDRezka - ' + hdrezkaRelease + '</div>'
+        name: '<div style="padding:.55em 0 .15em!important;color:rgba(255,255,255,.45);font-size:.78em;pointer-events:none">HDRezka - build ' + hdrezkaRelease + '</div>'
       }
     });
   }
