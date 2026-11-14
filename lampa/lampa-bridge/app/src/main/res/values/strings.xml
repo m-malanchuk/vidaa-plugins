@@ -1,0 +1,30 @@
+<resources>
+    <string name="app_name">Lampa Bridge</string>
+    <string name="app_subtitle">Local bridge for a VIDAA TV</string>
+    <string name="bridge_stopped">Lampa Bridge is stopped</string>
+    <string name="bridge_running">Lampa Bridge is running</string>
+    <string name="local_ip_label">PHONE LOCAL IP</string>
+    <string name="detecting_ip">Detecting…</string>
+    <string name="ip_not_found">IP not found</string>
+    <string name="phone_ip_placeholder">PHONE_IP</string>
+    <string name="bridge_url_label">Address for Lampa</string>
+    <string name="bridge_port_label">Lampa Bridge port</string>
+    <string name="bridge_port_hint">Usually does not need to be changed</string>
+    <string name="bridge_start">Start Lampa Bridge</string>
+    <string name="bridge_stop">Stop Lampa Bridge</string>
+    <string name="request_count">Requests: %1$d</string>
+    <string name="network_hint">The phone and TV must be on the same Wi-Fi network. The IP address and ready-to-use URL are shown above.</string>
+    <string name="security_hint">Security: only local devices and approved HDRezka domains are accepted.</string>
+    <string name="port_not_number">The port must be a number</string>
+    <string name="port_out_of_range">Use a port from 1024 to 65535</string>
+    <string name="error_message">Error: %1$s</string>
+    <string name="notification_channel_name">Lampa Bridge</string>
+    <string name="notification_channel_description">Lampa Bridge status</string>
+    <string name="notification_title">Lampa Bridge is running</string>
+    <string name="notification_stop">Stop</string>
+    <string name="notification_starting">Starting on port %1$d</string>
+    <string name="notification_running">Running on port %1$d</string>
+    <string name="notification_request_count">Requests: %1$d</string>
+    <string name="bridge_error">Lampa Bridge error</string>
+    <string name="server_start_error">Could not start the server</string>
+</resources>
