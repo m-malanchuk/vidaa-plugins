@@ -1,0 +1,68 @@
+plugins {
+    id 'com.android.application'
+}
+
+def releaseSigningVariables = [
+        'LAMPA_BRIDGE_KEYSTORE',
+        'LAMPA_BRIDGE_KEYSTORE_PASSWORD',
+        'LAMPA_BRIDGE_KEY_ALIAS',
+        'LAMPA_BRIDGE_KEY_PASSWORD'
+]
+def hasReleaseSigning = releaseSigningVariables.every { System.getenv(it) }
+
+android {
+    namespace 'ru.malanchuk.lampabridge'
+    compileSdk 35
+
+    buildFeatures {
+        buildConfig true
+    }
+
+    defaultConfig {
+        applicationId 'ru.malanchuk.lampabridge'
+        minSdk 26
+        targetSdk 35
+        versionCode 1
+        versionName '1.0.0'
+    }
+
+    signingConfigs {
+        if (hasReleaseSigning) {
+            release {
+                storeFile file(System.getenv('LAMPA_BRIDGE_KEYSTORE'))
+                storePassword System.getenv('LAMPA_BRIDGE_KEYSTORE_PASSWORD')
+                keyAlias System.getenv('LAMPA_BRIDGE_KEY_ALIAS')
+                keyPassword System.getenv('LAMPA_BRIDGE_KEY_PASSWORD')
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            if (hasReleaseSigning) {
+                signingConfig signingConfigs.release
+            }
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    testOptions {
+        unitTests.returnDefaultValues = true
+    }
+}
+
+dependencies {
+    testImplementation 'junit:junit:4.13.2'
+}
+
+tasks.register('printVersionName') {
+    doLast {
+        println android.defaultConfig.versionName
+    }
+}
